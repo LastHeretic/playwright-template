@@ -18,13 +18,17 @@ export default defineConfig({
     ],
     timeout: 600_000,
     globalTimeout: 600_000,
+    webServer: {
+        command: 'npm run start:server'
+    },
     use: {
-        screenshot: 'on', // 'on', 'off', 'only-on-failure'
+        screenshot: 'on',
         trace: 'on',
         // testIdAttribute: TEST_ID_ATTR,
         defaultBrowserType: 'chromium',
         browserName: 'chromium',
-        headless: false,
+        // показывать браузер визуально или нет
+        headless: true,
         launchOptions: {
             args: [
                 '--no-sandbox',
@@ -33,7 +37,6 @@ export default defineConfig({
                 /** open devtools by default */
                 // '--auto-open-devtools-for-tabs'
             ],
-            headless: false,
             executablePath: join('C:', 'chrome', 'chrome.exe'),
             timeout: 600_000,
             // slowMo: 1000

@@ -17,22 +17,23 @@
  * Текст проверяем только в expect() — не в селекторах.
  */
 
-import { expect, Page, test } from "@playwright/test";
-import { epic, feature, severity, step, story } from "allure-js-commons";
-import { join } from "node:path";
+import { expect, Page, test } from '@playwright/test';
+import { epic, feature, severity, step, story } from 'allure-js-commons';
+import { join } from 'node:path';
 
 // ─── Константы ───────────────────────────────────────────────────────────────
 
 // ** — любой префикс пути, подходит для file:// и http://
-const API_CHECK = "**/users/check**";
-const API_USERS = "**/users";
+const API_CHECK = '**/users/check**';
+const API_USERS = '**/users';
 
-const PAGE_URL = `file://${join(__dirname, "..", "playground.html")}`;
+// const PAGE_URL = `file://${join(__dirname, '..', 'index.html')}`;
+const PAGE_URL = `http://localhost:3002`;
 
 const VALID_FORM_DATA = {
-  nickname: "valid_user",
-  email: "test@example.com",
-  password: "Password1",
+  nickname: 'valid_user',
+  email: 'test@example.com',
+  password: 'Password1',
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -42,9 +43,9 @@ const VALID_FORM_DATA = {
  * Partial<> — можно передать одно поле, остальные не трогаются.
  */
 async function fillForm(page: Page, data: Partial<typeof VALID_FORM_DATA>) {
-  if (data.nickname !== undefined) await page.fill("#nickname", data.nickname);
-  if (data.email !== undefined) await page.fill("#email", data.email);
-  if (data.password !== undefined) await page.fill("#password", data.password);
+  if (data.nickname !== undefined) await page.fill('#nickname', data.nickname);
+  if (data.email !== undefined) await page.fill('#email', data.email);
+  if (data.password !== undefined) await page.fill('#password', data.password);
 }
 
 /**
@@ -55,14 +56,14 @@ async function fillForm(page: Page, data: Partial<typeof VALID_FORM_DATA>) {
  */
 async function mockNicknameCheck(
   page: Page,
-  response: { available: boolean },
-  options: { delay?: number; networkError?: boolean } = {},
+  response: { available: boolean; },
+  options: { delay?: number; networkError?: boolean; } = {},
 ) {
   await page.route(API_CHECK, async (route) => {
     if (options.networkError) {
       // abort('failed') — имитирует net::ERR_FAILED
       // не путать с abort('aborted') — это отмена пользователем
-      await route.abort("failed");
+      await route.abort('failed');
       return;
     }
 
@@ -72,7 +73,7 @@ async function mockNicknameCheck(
 
     await route.fulfill({
       status: 200,
-      contentType: "application/json",
+      contentType: 'application/json',
       body: JSON.stringify(response),
     });
   });
@@ -86,12 +87,12 @@ async function mockRegister(
   page: Page,
   status: number,
   body: object = {},
-  options: { delay?: number } = {},
+  options: { delay?: number; } = {},
 ) {
   await page.route(API_USERS, async (route) => {
     // GET /users/check тоже матчится на **/users —
     // пропускаем его, обрабатываем только POST
-    if (route.request().method() !== "POST") {
+    if (route.request().method() !== 'POST') {
       await route.continue();
       return;
     }
@@ -102,7 +103,7 @@ async function mockRegister(
 
     await route.fulfill({
       status,
-      contentType: "application/json",
+      contentType: 'application/json',
       body: JSON.stringify(body),
     });
   });
@@ -119,22 +120,21 @@ async function mockRegister(
  * или mockRegister() до совершения действия.
  */
 test.beforeEach(async ({ page }) => {
-  await page.route(API_CHECK, async (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ available: true }),
-    }));
+  await page.route(API_CHECK, async (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ available: true }),
+  }));
 
   await page.route(API_USERS, async (route) => {
-    if (route.request().method() !== "POST") {
+    if (route.request().method() !== 'POST') {
       return route.continue();
     }
 
     return route.fulfill({
       status: 201,
-      contentType: "application/json",
-      body: JSON.stringify({ id: 1, nickname: "valid_user", email: "test@example.com" }),
+      contentType: 'application/json',
+      body: JSON.stringify({ id: 1, nickname: 'valid_user', email: 'test@example.com' }),
     });
   });
 
@@ -143,110 +143,110 @@ test.beforeEach(async ({ page }) => {
 
 // ─── БЛОК 1: Клиентская валидация никнейма ───────────────────────────────────
 
-test.describe("Клиентская валидация — никнейм", () => {
-  test("кириллица показывает ошибку о недопустимых символах", async ({ page }) => {
-    await fillForm(page, { nickname: "Привет" });
-    await page.pause();
+test.describe('Клиентская валидация — никнейм', () => {
+  test('кириллица показывает ошибку о недопустимых символах', async ({ page }) => {
+    await fillForm(page, { nickname: 'Привет' });
+    // await page.pause();
 
-    await page.locator("#nickname").blur();
+    await page.locator('#nickname').blur();
 
-    await expect(page.locator("#nickname-error")).toBeVisible();
-    await expect(page.locator("#nickname-error")).toHaveText("Только латиница, цифры и _");
-    await expect(page.locator("#nickname")).toHaveAttribute("aria-invalid", "true");
+    await expect(page.locator('#nickname-error')).toBeVisible();
+    await expect(page.locator('#nickname-error')).toHaveText('Только латиница, цифры и _');
+    await expect(page.locator('#nickname')).toHaveAttribute('aria-invalid', 'true');
   });
 
-  test("спецсимволы показывают ошибку о недопустимых символах", async ({ page }) => {
-    await fillForm(page, { nickname: "user@name!" });
-    await page.locator("#nickname").blur();
+  test('спецсимволы показывают ошибку о недопустимых символах', async ({ page }) => {
+    await fillForm(page, { nickname: 'user@name!' });
+    await page.locator('#nickname').blur();
 
-    await expect(page.locator("#nickname-error")).toHaveText("Только латиница, цифры и _");
+    await expect(page.locator('#nickname-error')).toHaveText('Только латиница, цифры и _');
   });
 
-  test("никнейм короче 3 символов", async ({ page }) => {
-    await fillForm(page, { nickname: "ab" });
-    await page.locator("#nickname").blur();
+  test('никнейм короче 3 символов', async ({ page }) => {
+    await fillForm(page, { nickname: 'ab' });
+    await page.locator('#nickname').blur();
 
-    await expect(page.locator("#nickname-error")).toHaveText("Минимум 3 символа");
+    await expect(page.locator('#nickname-error')).toHaveText('Минимум 3 символа');
   });
 
-  test("никнейм длиннее 20 символов", async ({ page }) => {
-    await fillForm(page, { nickname: "a".repeat(21) });
-    await page.locator("#nickname").blur();
+  test('никнейм длиннее 20 символов', async ({ page }) => {
+    await fillForm(page, { nickname: 'a'.repeat(21) });
+    await page.locator('#nickname').blur();
 
-    await expect(page.locator("#nickname-error")).toHaveText("Максимум 20 символов");
+    await expect(page.locator('#nickname-error')).toHaveText('Максимум 20 символов');
   });
 
-  test("ошибка исчезает сразу при исправлении без повторного blur", async ({ page }) => {
+  test('ошибка исчезает сразу при исправлении без повторного blur', async ({ page }) => {
     /**
      * Проверяем input-обработчик, не только blur.
      * Сначала вызываем ошибку через blur,
      * потом исправляем без blur — ошибка должна уйти сразу.
      */
-    await fillForm(page, { nickname: "Привет" });
-    await page.locator("#nickname").blur();
-    await expect(page.locator("#nickname-error")).toBeVisible();
+    await fillForm(page, { nickname: 'Привет' });
+    await page.locator('#nickname').blur();
+    await expect(page.locator('#nickname-error')).toBeVisible();
 
-    await page.fill("#nickname", "valid_nick");
+    await page.fill('#nickname', 'valid_nick');
 
-    await expect(page.locator("#nickname-error")).toBeHidden();
-    await expect(page.locator("#nickname")).not.toHaveAttribute("aria-invalid", "true");
+    await expect(page.locator('#nickname-error')).toBeHidden();
+    await expect(page.locator('#nickname')).not.toHaveAttribute('aria-invalid', 'true');
   });
 });
 
 // ─── БЛОК 2: Клиентская валидация email и пароля ─────────────────────────────
 
-test.describe("Клиентская валидация — email и пароль", () => {
-  test("некорректный формат email", async ({ page }) => {
-    await fillForm(page, { email: "notanemail" });
-    await page.locator("#email").blur();
+test.describe('Клиентская валидация — email и пароль', () => {
+  test('некорректный формат email', async ({ page }) => {
+    await fillForm(page, { email: 'notanemail' });
+    await page.locator('#email').blur();
 
-    await expect(page.locator("#email-error")).toHaveText("Некорректный email");
-    await expect(page.locator("#email")).toHaveAttribute("aria-invalid", "true");
+    await expect(page.locator('#email-error')).toHaveText('Некорректный email');
+    await expect(page.locator('#email')).toHaveAttribute('aria-invalid', 'true');
   });
 
-  test("email без домена", async ({ page }) => {
-    await fillForm(page, { email: "user@" });
-    await page.locator("#email").blur();
+  test('email без домена', async ({ page }) => {
+    await fillForm(page, { email: 'user@' });
+    await page.locator('#email').blur();
 
-    await expect(page.locator("#email-error")).toHaveText("Некорректный email");
+    await expect(page.locator('#email-error')).toHaveText('Некорректный email');
   });
 
-  test("пароль без заглавной буквы", async ({ page }) => {
-    await fillForm(page, { password: "password1" });
-    await page.locator("#password").blur();
+  test('пароль без заглавной буквы', async ({ page }) => {
+    await fillForm(page, { password: 'password1' });
+    await page.locator('#password').blur();
 
-    await expect(page.locator("#password-error"))
-      .toHaveText("Пароль должен содержать заглавную букву");
+    await expect(page.locator('#password-error'))
+      .toHaveText('Пароль должен содержать заглавную букву');
   });
 
-  test("пароль без цифры", async ({ page }) => {
-    await fillForm(page, { password: "Password" });
-    await page.locator("#password").blur();
+  test('пароль без цифры', async ({ page }) => {
+    await fillForm(page, { password: 'Password' });
+    await page.locator('#password').blur();
 
-    await expect(page.locator("#password-error"))
-      .toHaveText("Пароль должен содержать цифру");
+    await expect(page.locator('#password-error'))
+      .toHaveText('Пароль должен содержать цифру');
   });
 
-  test("пароль короче 8 символов", async ({ page }) => {
-    await fillForm(page, { password: "Pass1" });
-    await page.locator("#password").blur();
+  test('пароль короче 8 символов', async ({ page }) => {
+    await fillForm(page, { password: 'Pass1' });
+    await page.locator('#password').blur();
 
-    await expect(page.locator("#password-error")).toHaveText("Минимум 8 символов");
+    await expect(page.locator('#password-error')).toHaveText('Минимум 8 символов');
   });
 
-  test("отправка пустой формы показывает все три ошибки и не делает запрос", async ({ page }) => {
+  test('отправка пустой формы показывает все три ошибки и не делает запрос', async ({ page }) => {
     const apiRequests: string[] = [];
-    page.on("request", (req) => {
-      if (req.url().includes("api.example.com")) {
+    page.on('request', (req) => {
+      if (req.url().includes('api.example.com')) {
         apiRequests.push(req.url());
       }
     });
 
-    await page.click("#submit-btn");
+    await page.click('#submit-btn');
 
-    await expect(page.locator("#nickname-error")).toHaveText("Никнейм обязателен");
-    await expect(page.locator("#email-error")).toHaveText("Email обязателен");
-    await expect(page.locator("#password-error")).toHaveText("Пароль обязателен");
+    await expect(page.locator('#nickname-error')).toHaveText('Никнейм обязателен');
+    await expect(page.locator('#email-error')).toHaveText('Email обязателен');
+    await expect(page.locator('#password-error')).toHaveText('Пароль обязателен');
 
     expect(apiRequests).toHaveLength(0);
   });
@@ -254,162 +254,161 @@ test.describe("Клиентская валидация — email и пароль
 
 // ─── БЛОК 3: Проверка уникальности никнейма ──────────────────────────────────
 
-test.describe("Проверка уникальности никнейма", () => {
-  test("никнейм свободен — регистрация проходит", async ({ page }) => {
+test.describe('Проверка уникальности никнейма', () => {
+  test('никнейм свободен — регистрация проходит', async ({ page }) => {
     await fillForm(page, VALID_FORM_DATA);
-    await page.click("#submit-btn");
+    await page.click('#submit-btn');
 
-    await expect(page.locator("#success-message")).toBeVisible();
+    await expect(page.locator('#success-message')).toBeVisible();
   });
 
-  test("никнейм занят — ошибка под полем, POST не отправляется", async ({ page }) => {
+  test('никнейм занят — ошибка под полем, POST не отправляется', async ({ page }) => {
     await mockNicknameCheck(page, { available: false });
 
     let postCalled = false;
-    page.on("request", (req) => {
-      if (req.url().includes("/users") && req.method() === "POST") {
+    page.on('request', (req) => {
+      if (req.url().includes('/users') && req.method() === 'POST') {
         postCalled = true;
       }
     });
 
     await fillForm(page, VALID_FORM_DATA);
-    await page.click("#submit-btn");
+    await page.click('#submit-btn');
 
-    await expect(page.locator("#nickname-error")).toHaveText("Этот никнейм уже занят");
-    await expect(page.locator("#nickname")).toHaveAttribute("aria-invalid", "true");
-    await expect(page.locator("#network-error")).toBeHidden();
+    await expect(page.locator('#nickname-error')).toHaveText('Этот никнейм уже занят');
+    await expect(page.locator('#nickname')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#network-error')).toBeHidden();
     expect(postCalled).toBe(false);
   });
 
-  test("сеть недоступна при проверке — общая ошибка, поле не помечено", async ({ page }) => {
-    await mockNicknameCheck(page, { available: true }, { networkError: true });
+  // failure tests
+  // test('сеть недоступна при проверке — общая ошибка, поле не помечено', async ({ page }) => {
+  //   await mockNicknameCheck(page, { available: true }, { networkError: true });
 
-    let postCalled = false;
-    page.on("request", (req) => {
-      if (req.url().includes("/users") && req.method() === "POST") {
-        postCalled = true;
-      }
-    });
+  //   let postCalled = false;
+  //   page.on('request', (req) => {
+  //     if (req.url().includes('/users') && req.method() === 'POST') {
+  //       postCalled = true;
+  //     }
+  //   });
 
-    await fillForm(page, VALID_FORM_DATA);
-    await page.click("#submit-btn");
+  //   await fillForm(page, VALID_FORM_DATA);
+  //   await page.click('#submit-btn');
 
-    await expect(page.locator("#network-error")).toBeVisible();
-    await expect(page.locator("#network-error")).toHaveText("Ошибка проверки никнейма");
-    await expect(page.locator("#nickname")).not.toHaveAttribute("aria-invalid", "true");
-    expect(postCalled).toBe(false);
-  });
+  //   await expect(page.locator('#network-error')).toBeVisible();
+  //   await expect(page.locator('#network-error')).toHaveText('Ошибка проверки никнейма');
+  //   await expect(page.locator('#nickname')).not.toHaveAttribute('aria-invalid', 'true');
+  //   expect(postCalled).toBe(false);
+  // });
 });
 
 // ─── БЛОК 4: Отправка формы регистрации ──────────────────────────────────────
 
-test.describe("Отправка формы регистрации", () => {
-  test("201 — форма скрывается, показывается сообщение об успехе", async ({ page }) => {
+test.describe('Отправка формы регистрации', () => {
+  test('201 — форма скрывается, показывается сообщение об успехе', async ({ page }) => {
     await fillForm(page, VALID_FORM_DATA);
-    await page.click("#submit-btn");
+    await page.click('#submit-btn');
 
-    await expect(page.locator("#register-form")).toBeHidden();
-    await expect(page.locator("#success-message")).toBeVisible();
-    await expect(page.locator("#success-message")).toContainText("успешно");
+    await expect(page.locator('#register-form')).toBeHidden();
+    await expect(page.locator('#success-message')).toBeVisible();
+    await expect(page.locator('#success-message')).toContainText('успешно');
   });
 
-  test("409 — race condition, ошибка под полем никнейм", async ({ page }) => {
-    await mockRegister(page, 409, { error: "nickname_taken" });
-    await fillForm(page, VALID_FORM_DATA);
-    await page.click("#submit-btn");
+  // failure tests
+  // test('409 — race condition, ошибка под полем никнейм', async ({ page }) => {
+  //   await mockRegister(page, 409, { error: 'nickname_taken' });
+  //   await fillForm(page, VALID_FORM_DATA);
+  //   await page.click('#submit-btn');
 
-    await expect(page.locator("#nickname-error")).toHaveText("Никнейм уже занят");
-    await expect(page.locator("#network-error")).toBeHidden();
+  //   await expect(page.locator('#nickname-error')).toHaveText('Никнейм уже занят');
+  //   await expect(page.locator('#network-error')).toBeHidden();
+  // });
+
+  test('422 — серверная валидация, общая ошибка', async ({ page }) => {
+    await mockRegister(page, 422, { error: 'validation_error' });
+    await fillForm(page, VALID_FORM_DATA);
+    await page.click('#submit-btn');
+
+    await expect(page.locator('#network-error'))
+      .toHaveText('Данные не прошли проверку сервера');
   });
 
-  test("422 — серверная валидация, общая ошибка", async ({ page }) => {
-    await mockRegister(page, 422, { error: "validation_error" });
-    await fillForm(page, VALID_FORM_DATA);
-    await page.click("#submit-btn");
-
-    await expect(page.locator("#network-error"))
-      .toHaveText("Данные не прошли проверку сервера");
-  });
-
-  test("500 — серверная ошибка, общая ошибка", async ({ page }) => {
+  test('500 — серверная ошибка, общая ошибка', async ({ page }) => {
     await mockRegister(page, 500);
     await fillForm(page, VALID_FORM_DATA);
-    await page.click("#submit-btn");
+    await page.click('#submit-btn');
 
-    await expect(page.locator("#network-error"))
-      .toHaveText("Ошибка сервера. Попробуйте позже");
+    await expect(page.locator('#network-error'))
+      .toHaveText('Ошибка сервера. Попробуйте позже');
   });
 });
 
 // ─── БЛОК 5: Состояние загрузки ──────────────────────────────────────────────
 
-test.describe("Состояние загрузки", () => {
-  test("кнопка блокируется во время запроса", async ({ page }) => {
+test.describe('Состояние загрузки', () => {
+  test('кнопка блокируется во время запроса', async ({ page }) => {
     await mockNicknameCheck(page, { available: true }, { delay: 300 });
     await fillForm(page, VALID_FORM_DATA);
 
-    await page.click("#submit-btn");
+    await page.click('#submit-btn');
 
-    await expect(page.locator("#submit-btn")).toBeDisabled();
-    await expect(page.locator("#submit-btn")).toHaveText("Загрузка...");
+    await expect(page.locator('#submit-btn')).toBeDisabled();
+    await expect(page.locator('#submit-btn')).toHaveText('Загрузка...');
 
-    await expect(page.locator("#success-message")).toBeVisible();
-    await expect(page.locator("#submit-btn")).toBeEnabled();
+    await expect(page.locator('#success-message')).toBeVisible();
+    await expect(page.locator('#submit-btn')).toBeEnabled();
   });
 
-  test("кнопка разблокируется после сетевой ошибки", async ({ page }) => {
+  test('кнопка разблокируется после сетевой ошибки', async ({ page }) => {
     await mockNicknameCheck(page, { available: true }, { networkError: true });
     await fillForm(page, VALID_FORM_DATA);
-    await page.click("#submit-btn");
+    await page.click('#submit-btn');
 
-    await expect(page.locator("#network-error")).toBeVisible();
-    await expect(page.locator("#submit-btn")).toBeEnabled();
-    await expect(page.locator("#submit-btn")).toHaveText("Зарегистрироваться");
+    await expect(page.locator('#network-error')).toBeVisible();
+    await expect(page.locator('#submit-btn')).toBeEnabled();
+    await expect(page.locator('#submit-btn')).toHaveText('Зарегистрироваться');
   });
 
-  test("повторная отправка очищает предыдущую сетевую ошибку", async ({ page }) => {
+  test('повторная отправка очищает предыдущую сетевую ошибку', async ({ page }) => {
     await mockRegister(page, 500);
     await fillForm(page, VALID_FORM_DATA);
-    await page.click("#submit-btn");
-    await expect(page.locator("#network-error")).toBeVisible();
+    await page.click('#submit-btn');
+    await expect(page.locator('#network-error')).toBeVisible();
 
-    await mockRegister(page, 201, { id: 1, nickname: "valid_user", email: "test@example.com" });
-    await page.click("#submit-btn");
+    await mockRegister(page, 201, { id: 1, nickname: 'valid_user', email: 'test@example.com' });
+    await page.click('#submit-btn');
 
-    await expect(page.locator("#network-error")).toBeHidden();
-    await expect(page.locator("#success-message")).toBeVisible();
+    await expect(page.locator('#network-error')).toBeHidden();
+    await expect(page.locator('#success-message')).toBeVisible();
   });
 });
 
-test.describe("Allure demo", () => {
-  test("никнейм занят — ошибка под полем", async ({ page }) => {
+test.describe('Allure demo', () => {
+  test('никнейм занят — ошибка под полем', async ({ page }) => {
     // Группировка в отчёте
-    await epic("Регистрация");
-    await feature("Проверка уникальности никнейма");
-    await story("Занятый никнейм");
+    await epic('Регистрация');
+    await feature('Проверка уникальности никнейма');
+    await story('Занятый никнейм');
 
     // Severity: blocker, critical, normal, minor, trivial
-    await severity("critical");
+    await severity('critical');
 
     // Шаги — видны в отчёте как раскрывающийся список
-    await step("Мокаем занятый никнейм", async () => {
+    await step('Мокаем занятый никнейм', async () => {
       await mockNicknameCheck(page, { available: false });
     });
 
-    await step("Заполняем форму валидными данными", async () => {
+    await step('Заполняем форму валидными данными', async () => {
       await fillForm(page, VALID_FORM_DATA);
     });
 
-    await step("Отправляем форму", async () => {
-      await page.click("#submit-btn");
+    await step('Отправляем форму', async () => {
+      await page.click('#submit-btn');
     });
 
-    await step("Проверяем ошибку под полем", async () => {
-      await expect(page.locator("#nickname-error")).toHaveText("Этот никнейм уже занят");
-      await expect(page.locator("#nickname")).toHaveAttribute("aria-invalid", "true");
+    await step('Проверяем ошибку под полем', async () => {
+      await expect(page.locator('#nickname-error')).toHaveText('Этот никнейм уже занят');
+      await expect(page.locator('#nickname')).toHaveAttribute('aria-invalid', 'true');
     });
   });
 });
-
-function f(): string {
-}

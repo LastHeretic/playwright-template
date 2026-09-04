@@ -1,0 +1,19 @@
+{
+    "playwright.configFile": "../playwright.config.ts",
+    "[typescript]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "[javascript]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "js/ts.format.insertSpaceAfterCommaDelimiter": true,
+    "js/ts.format.insertSpaceAfterSemicolonInForStatements": true,
+    "js/ts.format.insertSpaceBeforeAndAfterBinaryOperators": true,
+    "js/ts.format.insertSpaceAfterKeywordsInControlFlowStatements": true,
+    "js/ts.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+    "js/ts.format.insertSpaceBeforeFunctionParenthesis": false,
+    "js/ts.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+    "js/ts.format.semicolons": "insert"
+}
