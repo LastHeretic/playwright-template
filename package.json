@@ -25,7 +25,8 @@
         "typescript": "6.0.3",
         "vite": "8.0.13",
         "vite-node": "6.0.0",
-        "wait-on": "9.0.10"
+        "wait-on": "9.0.10",
+        "playwright-recast": "^0.21.0"
     },
     "engines": {
         "node": ">=24"
