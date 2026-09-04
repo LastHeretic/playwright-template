@@ -1,0 +1,52 @@
+{
+    "name": "playwright-template-ts",
+    "version": "0.0.1",
+    "private": true,
+    "description": "",
+    "license": "ISC",
+    "author": "VElena",
+    "scripts": {
+        "eslint": "eslint",
+        "lint-staged": "lint-staged",
+        "playwright": "playwright",
+        "start": "playwright test -c ./playwright.config.ts",
+        "allure": "allure generate allure-results --clean -o allure-report",
+        "allure:open": "allure open allure-report",
+        "playwright:report": "playwright show-report playwright-report",
+        "start:ui": "playwright test --ui -c ./playwright.config.ts --debug",
+        "start:ui:cdp": "vite-node ./run-cdp.mts",
+        "start:simple": "vite-node ./playground/run.ts",
+        "postinstall": "node scripts/postinstall.mts"
+
+    },
+    "devDependencies": {
+        "@cucumber/gherkin": "^39.0.0",
+        "@eslint/js": "^10.0.1",
+        "@playwright/test": "~1.60.0",
+        "@types/node": "^24.0.0",
+        "@typescript-eslint/eslint-plugin": "8.59.3",
+        "@typescript-eslint/parser": "8.59.3",
+        "allure-commandline": "^2.32.0",
+        "allure-js-commons": "3.9.0",
+        "allure-playwright": "^3.3.0",
+        "eslint": "^10.3.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-jsonc": "^3.1.2",
+        "eslint-plugin-prettier": "^5.5.5",
+        "globals": "~17.6.0",
+        "jsonc-eslint-parser": "^3.1.0",
+        "lint-staged": "^17.0.4",
+        "playwright-bdd": "^8.4.2",
+        "prettier": "^3.8.3",
+        "typescript": "6.0.3",
+        "vite": "8.0.13",
+        "vite-node":"6.0.0",
+        "wait-on": "9.0.10"
+    },
+    "engines": {
+        "node": ">=24"
+    },
+    "lint-staged": {
+        "*.(ts,json)": "eslint --fix"
+    }
+}

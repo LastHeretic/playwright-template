@@ -1,0 +1,7 @@
+node_modules
+.idea
+allure-report
+allure-results
+test-results
+.vscode
+playwright-report
