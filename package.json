@@ -12,8 +12,8 @@
         "allure:open": "allure open allure-report",
         "playwright:report": "playwright show-report playwright-report",
         "start:ui": "playwright test --ui -c ./playwright.config.ts --debug",
-        "start:simple": "vite-node ./playground/run.ts",
-        "start:server": "vite-node ./playground-server.ts"
+        "start:simple": "tsx ./playground/run.ts",
+        "start:server": "tsx ./playground-server.ts"
     },
     "devDependencies": {
         "@playwright/test": "~1.60.0",
@@ -22,13 +22,16 @@
         "allure-js-commons": "3.9.0",
         "allure-playwright": "^3.3.0",
         "globals": "~17.6.0",
+        "playwright-recast": "^0.21.0",
         "typescript": "6.0.3",
         "vite": "8.0.13",
-        "vite-node": "6.0.0",
-        "wait-on": "9.0.10",
-        "playwright-recast": "^0.21.0"
+        "tsx": "6.0.0",
+        "wait-on": "9.0.10"
     },
     "engines": {
         "node": ">=24"
+    },
+    "dependencies": {
+        "tsx": "^4.23.15"
     }
 }
